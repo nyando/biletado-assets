@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate diesel;
+mod db;
+
 use actix_web::{get, App, HttpServer, HttpResponse, Responder};
 
 #[get("/")]
