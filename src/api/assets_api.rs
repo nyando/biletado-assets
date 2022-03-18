@@ -1,8 +1,12 @@
 use actix_web::{get, post, put, delete, HttpResponse, Responder, web};
+use serde_json;
+
+use crate::db::conn::get_buildings;
 
 #[get("/assets/buildings")]
 async fn get_all_buildings() -> impl Responder {
-    HttpResponse::Ok()
+    let result = serde_json::to_string(&get_buildings()).unwrap();
+    HttpResponse::Ok().body(result)
 }
 
 #[post("/assets/buildings")]
