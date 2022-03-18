@@ -1,26 +1,33 @@
 use actix_web::{get, post, put, delete, HttpResponse, Responder, web};
-use serde_json;
+use serde_json::json;
 
-use crate::db::conn::*;
+use crate::db::crudops::*;
 
 use uuid::Uuid;
 
 #[get("/assets/buildings")]
 async fn get_all_buildings() -> impl Responder {
     let result = serde_json::to_string(&get_buildings()).unwrap();
-    HttpResponse::Ok().body(result)
+    HttpResponse::Ok().json(result)
 }
 
 #[post("/assets/buildings")]
 async fn add_building(req_body: String) -> impl Responder {
-    HttpResponse::Created().body(req_body)
+    HttpResponse::Created().json(req_body)
 }
 
 #[get("/assets/buildings/{id}")]
 async fn get_building_by_id(id: web::Path<String>) -> impl Responder {
-    let building_id = Uuid::parse_str(&id);
-    let result = serde_json::to_string(&find_building_by_id(building_id.unwrap()));
-    HttpResponse::Ok()
+    let building_uuid = Uuid::parse_str(&id);
+    match building_uuid {
+        Ok(building_id) => {
+            let result = serde_json::to_string(&find_building_by_id(building_id));
+            if result.is_ok() { 
+                HttpResponse::Ok().json(result.unwrap())
+            } else { HttpResponse::NotFound().json(json!({ "message": "building with UUID not found" })) }
+        },
+        _ => HttpResponse::NotFound().json(json!({ "message": "invalid UUID" }))
+    }
 }
 
 #[put("/assets/buildings/{id}")]

@@ -5,11 +5,17 @@ extern crate diesel;
 
 mod api;
 
+use dotenv::dotenv;
+use crate::db::dbconn;
 use crate::api::assets_api::*;
 use actix_web::{App, HttpServer};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
+
+    dbconn::init();
+
     HttpServer::new(|| {
         App::new()
             .service(get_all_buildings)
