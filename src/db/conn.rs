@@ -1,5 +1,7 @@
 extern crate dotenv;
 
+use crate::diesel::QueryDsl;
+use crate::db::schema::buildings::id;
 use crate::db::schema::buildings::dsl::buildings;
 use crate::db::models::Building;
 
@@ -16,4 +18,14 @@ pub fn db_connect() -> PgConnection {
 pub fn get_buildings() -> Vec<Building> {
     let conn = db_connect();
     buildings.load::<Building>(&conn).expect("Error loading buildings")
+}
+
+pub fn find_building_by_id(building_id: uuid::Uuid) -> Option<Building> {
+    let conn = db_connect();
+    let result = buildings.find(building_id).first::<Building>(&conn);
+
+    match result {
+        Ok(building) => Some(building),
+        _            => None
+    }
 }

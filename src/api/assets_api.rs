@@ -1,7 +1,9 @@
 use actix_web::{get, post, put, delete, HttpResponse, Responder, web};
 use serde_json;
 
-use crate::db::conn::get_buildings;
+use crate::db::conn::*;
+
+use uuid::Uuid;
 
 #[get("/assets/buildings")]
 async fn get_all_buildings() -> impl Responder {
@@ -15,7 +17,9 @@ async fn add_building(req_body: String) -> impl Responder {
 }
 
 #[get("/assets/buildings/{id}")]
-async fn get_building_by_id(_id: web::Path<String>) -> impl Responder {
+async fn get_building_by_id(id: web::Path<String>) -> impl Responder {
+    let building_id = Uuid::parse_str(&id);
+    let result = serde_json::to_string(&find_building_by_id(building_id.unwrap()));
     HttpResponse::Ok()
 }
 
