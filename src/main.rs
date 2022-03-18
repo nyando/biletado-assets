@@ -20,6 +20,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(get_all_buildings)
             .service(add_building)
+            .service(update_building)
+            .service(delete_building)
             .service(get_building_by_id)
     }).bind(("127.0.0.1", 8081))?.run().await
 }
