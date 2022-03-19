@@ -15,9 +15,13 @@ jobs:
       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
     - name: Build version tag Docker image
       run: docker build . --file Dockerfile --tag biletado-assets:$(date +%s)
+    - name: Tag Docker image
+      run : docker tag biletado-assets:$(date +%s) ${{ secrets.DOCKERHUB_USERNAME }}/biletado-assets:$(date +%s)
     - name: Push version tag Docker image
       run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/biletado-assets:$(date +%s)
     - name: Build latest tag Docker image
       run: docker build . --file Dockerfile --tag biletado-assets:latest
+    - name: Tag latest Docker image
+      run : docker tag biletado-assets:latest ${{ secrets.DOCKERHUB_USERNAME }}/biletado-assets:latest
     - name: Push latest tag Docker image
       run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/biletado-assets:latest
