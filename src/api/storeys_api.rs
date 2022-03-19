@@ -1,9 +1,9 @@
 use actix_web::{get, post, put, delete, HttpResponse, Responder, web};
 use serde_json::{json};
 
-use crate::db::storeys_crud::*;
-use crate::db::rooms_crud::has_rooms;
-use crate::db::buildings_crud::find_building_by_id;
+use crate::db::crud::storeys_crud::*;
+use crate::db::crud::rooms_crud::has_rooms;
+use crate::db::crud::buildings_crud::find_building_by_id;
 use crate::db::models::OptionalIDStorey;
 
 use uuid::Uuid;
