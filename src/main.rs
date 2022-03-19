@@ -5,19 +5,26 @@ extern crate diesel;
 
 mod api;
 
+#[macro_use]
+extern crate log;
+extern crate env_logger;
+
 use dotenv::dotenv;
 use crate::db::dbconn;
 use crate::api::buildings_api::*;
 use crate::api::rooms_api::*;
 use crate::api::storeys_api::*;
 use actix_web::{App, HttpServer};
+use log::info;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-
+    env_logger::init();
     dbconn::init();
 
+    info!("assets API service running on port 8081");
+    
     HttpServer::new(|| {
         App::new()
             .service(get_all_buildings)
