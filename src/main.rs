@@ -7,7 +7,9 @@ mod api;
 
 use dotenv::dotenv;
 use crate::db::dbconn;
-use crate::api::assets_api::*;
+use crate::api::buildings_api::*;
+use crate::api::rooms_api::*;
+use crate::api::storeys_api::*;
 use actix_web::{App, HttpServer};
 
 #[actix_web::main]
