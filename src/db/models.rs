@@ -21,15 +21,15 @@ pub struct OptionalIDBuilding {
 #[derive(Serialize, Deserialize, Queryable, Insertable, Identifiable)]
 pub struct Storey {
     pub id: uuid::Uuid,
-    pub building_id: uuid::Uuid,
-    pub name: String
+    pub name: String,
+    pub building_id: uuid::Uuid
 }
 
 #[derive(Deserialize)]
 pub struct OptionalIDStorey {
     pub id: Option<uuid::Uuid>,
-    pub building_id: uuid::Uuid,
-    pub name: String
+    pub name: String,
+    pub building_id: uuid::Uuid
 }
 
 #[derive(Serialize, Deserialize, Queryable, Insertable, Identifiable)]
