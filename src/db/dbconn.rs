@@ -10,7 +10,20 @@ pub type DbConnection = r2d2::PooledConnection<ConnectionManager<PgConnection>>;
 
 lazy_static! {
     static ref POOL : Pool = {
-        let db_url = env::var("DATABASE_URL").expect("DATABASE_URL not set");
+
+        let db_user = env::var("POSTGRES_ASSETS_USER")
+            .expect("POSTGRES_ASSETS_USER environment variable not set");
+        let db_pass = env::var("POSTGRES_ASSETS_PASSWORD")
+            .expect("POSTGRES_ASSETS_PASSWORD environment variable not set");
+        let db_name = env::var("POSTGRES_ASSETS_DBNAME")
+            .expect("POSTGRES_ASSETS_DBNAME environment variable not set");
+        let db_host = env::var("POSTGRES_ASSETS_HOST")
+            .expect("POSTGRES_ASSETS_HOST environment variable not set");
+        let db_port = env::var("POSTGRES_ASSETS_PORT")
+            .expect("POSTGRES_ASSETS_PORT environment variable not set");
+
+        let db_url = format!("postgres://{}:{}@{}:{}/{}", db_user, db_pass, db_host, db_port, db_name);
+
         let manager = ConnectionManager::<PgConnection>::new(db_url);
         Pool::new(manager).expect("failed to create db pool")
     };
@@ -19,7 +32,6 @@ lazy_static! {
 pub fn init() {
     lazy_static::initialize(&POOL);
     connection().expect("failed to connect to DB");
-    env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 }
 
 pub fn connection() -> Result<DbConnection, r2d2::Error> {
