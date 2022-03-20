@@ -1,11 +1,10 @@
 use actix_web::{get, post, put, delete, HttpResponse, Responder, web};
 use serde_json::{json};
 
+use crate::api::validator::validate_uuid;
 use crate::db::crud::buildings_crud::*;
 use crate::db::crud::storeys_crud::has_storeys;
 use crate::db::models::OptionalIDBuilding;
-
-use uuid::Uuid;
 
 #[get("/assets/buildings")]
 async fn get_all_buildings() -> impl Responder {
@@ -37,9 +36,9 @@ async fn add_building(req_body: String) -> impl Responder {
 
 #[get("/assets/buildings/{id}")]
 async fn get_building_by_id(id: web::Path<String>) -> impl Responder {
-    let building_uuid = Uuid::parse_str(&id);
+    let building_uuid = validate_uuid(id.to_string());
 
-    if let Ok(building_id) = building_uuid {
+    if let Some(building_id) = building_uuid {
 
         let result = serde_json::to_string(&find_building_by_id(building_id));
 
@@ -60,8 +59,8 @@ async fn get_building_by_id(id: web::Path<String>) -> impl Responder {
 #[put("/assets/buildings/{id}")]
 async fn update_building(id: web::Path<String>, req_body: String) -> impl Responder {
     
-    let param_id = Uuid::parse_str(&id);
-    if param_id.is_err() {
+    let param_id = validate_uuid(id.to_string());
+    if param_id.is_none() {
         error!("invalid param UUID: {}", id);
         return HttpResponse::BadRequest().json(json!({ "message": "invalid UUID in parameters" }));
     }
@@ -97,8 +96,8 @@ async fn update_building(id: web::Path<String>, req_body: String) -> impl Respon
 #[delete("/assets/buildings/{id}")]
 async fn delete_building(id: web::Path<String>) -> impl Responder {
 
-    let param_id = Uuid::parse_str(&id);
-    if param_id.is_err() {
+    let param_id = validate_uuid(id.to_string());
+    if param_id.is_none() {
         error!("invalid param UUID: {}", id);
         return HttpResponse::BadRequest().json(json!({ "message": "invalid UUID in parameters" }));
     }
