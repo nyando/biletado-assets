@@ -16,11 +16,7 @@ pub fn get_buildings() -> Vec<Building> {
 
 pub fn find_building_by_id(id: uuid::Uuid) -> Option<Building> {
     let conn = connection().unwrap();
-    let result = buildings.find(id).first::<Building>(&conn);
-    match result {
-        Ok(building) => Some(building),
-        _            => None
-    }
+    buildings.find(id).first::<Building>(&conn).ok()
 }
 
 pub fn create_or_update_building(id: Option<uuid::Uuid>, building_name: String, building_address: String) -> Option<Building> {
