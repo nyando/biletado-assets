@@ -65,8 +65,5 @@ pub fn create_or_update_building(id: Option<uuid::Uuid>, building_name: String, 
 
 pub fn delete_building_by_id(id: uuid::Uuid) -> bool {
     let conn = connection().unwrap();
-    match diesel::delete(buildings.find(id)).execute(&conn) {
-        Ok(1) => true,
-        _ => false
-    }
+    matches!(diesel::delete(buildings.find(id)).execute(&conn), Ok(1))
 }

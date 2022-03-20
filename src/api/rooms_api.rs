@@ -18,7 +18,7 @@ async fn get_all_rooms() -> impl Responder {
 async fn add_room(req_body: String) -> impl Responder {
 
     let body_content : Result<OptionalIDRoom, serde_json::Error> = serde_json::from_str(&req_body);
-    if let Err(_) = body_content { 
+    if body_content.is_err() { 
         error!("invalid room request body: {}", req_body);
         return HttpResponse::BadRequest().json(json!({ "message": "invalid input" }));
     }
@@ -27,7 +27,7 @@ async fn add_room(req_body: String) -> impl Responder {
     let room_name = room.name.to_string();
     let room_storey_id = room.storey_id;
 
-    if let None = find_storey_by_id(room_storey_id) {
+    if find_storey_by_id(room_storey_id).is_none() {
         error!("storey with UUID {} does not exist", room_storey_id);
         return HttpResponse::UnprocessableEntity().json(json!({ "message": "invalid storey UUID" }));
     }
@@ -69,13 +69,13 @@ async fn get_room_by_id(id: web::Path<String>) -> impl Responder {
 async fn update_room(id: web::Path<String>, req_body: String) -> impl Responder {
 
     let param_id = Uuid::parse_str(&id);
-    if let Err(_) = param_id {
+    if param_id.is_err() {
         error!("invalid param UUID: {}", id);
         return HttpResponse::BadRequest().json(json!({ "message": "invalid UUID in parameters" }));
     }
     
     let body_content : Result<OptionalIDRoom, serde_json::Error> = serde_json::from_str(&req_body);
-    if let Err(_) = body_content {
+    if body_content.is_err() {
         error!("invalid room request body: {}", req_body);
         return HttpResponse::BadRequest().json(json!({ "message": "invalid input" }));
     }
@@ -92,7 +92,7 @@ async fn update_room(id: web::Path<String>, req_body: String) -> impl Responder 
         }
     }
 
-    if let None = find_storey_by_id(room_storey_id) {
+    if find_storey_by_id(room_storey_id).is_none() {
         error!("storey with UUID {} does not exist", room_storey_id);
         return HttpResponse::UnprocessableEntity().json(json!({ "message": "invalid storey UUID" }));
     }
@@ -111,7 +111,7 @@ async fn update_room(id: web::Path<String>, req_body: String) -> impl Responder 
 async fn delete_room(id: web::Path<String>) -> impl Responder {
 
     let param_id = Uuid::parse_str(&id);
-    if let Err(_) = param_id {
+    if param_id.is_err() {
         error!("invalid param UUID: {}", id);
         return HttpResponse::BadRequest().json(json!({ "message": "invalid UUID in parameters" }));
     }

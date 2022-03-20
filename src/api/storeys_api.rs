@@ -19,7 +19,7 @@ async fn get_all_storeys() -> impl Responder {
 async fn add_storey(req_body: String) -> impl Responder {
 
     let body_content : Result<OptionalIDStorey, serde_json::Error> = serde_json::from_str(&req_body);
-    if let Err(_) = body_content {
+    if body_content.is_err() {
         error!("invalid storey request body: {}", req_body);
         return HttpResponse::BadRequest().json(json!({ "message": "invalid input" }));
     }
@@ -28,7 +28,7 @@ async fn add_storey(req_body: String) -> impl Responder {
     let storey_name = storey.name.to_string();
     let storey_building_id = storey.building_id;
 
-    if let None = find_building_by_id(storey_building_id) {
+    if find_building_by_id(storey_building_id).is_none() {
         error!("building with UUID {} does not exist", storey_building_id);
         return HttpResponse::UnprocessableEntity().json(json!({ "message": "invalid building UUID" }));
     }
@@ -69,13 +69,13 @@ async fn get_storey_by_id(id: web::Path<String>) -> impl Responder {
 async fn update_storey(id: web::Path<String>, req_body: String) -> impl Responder {
 
     let param_id = Uuid::parse_str(&id);
-    if let Err(_) = param_id {
+    if param_id.is_err() {
         error!("invalid param UUID: {}", id);
         return HttpResponse::BadRequest().json(json!({ "message": "invalid UUID in parameters" }));
     }
     
     let body_content : Result<OptionalIDStorey, serde_json::Error> = serde_json::from_str(&req_body);
-    if let Err(_) = body_content {
+    if body_content.is_err() {
         error!("invalid storey request body: {}", req_body);
         return HttpResponse::BadRequest().json(json!({ "message": "invalid input" }));
     }
@@ -92,7 +92,7 @@ async fn update_storey(id: web::Path<String>, req_body: String) -> impl Responde
         }
     }
 
-    if let None = find_building_by_id(storey_building_id) {
+    if find_building_by_id(storey_building_id).is_none() {
         error!("building with UUID {} does not exist", storey_building_id);
         return HttpResponse::UnprocessableEntity().json(json!({ "message": "invalid building UUID" }));
     }
@@ -111,7 +111,7 @@ async fn update_storey(id: web::Path<String>, req_body: String) -> impl Responde
 async fn delete_storey(id: web::Path<String>) -> impl Responder {
 
     let param_id = Uuid::parse_str(&id);
-    if let Err(_) = param_id {
+    if param_id.is_err() {
         error!("invalid param UUID: {}", id);
         return HttpResponse::BadRequest().json(json!({ "message": "invalid UUID in parameters" }));
     }

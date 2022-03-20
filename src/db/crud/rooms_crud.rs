@@ -11,10 +11,9 @@ use crate::dbconn::connection;
 
 pub fn has_rooms(id: uuid::Uuid) -> bool {
     let conn = connection().unwrap();
-    match diesel::select(diesel::dsl::exists(rooms.filter(storey_id.eq(id)))).get_result(&conn) {
-        Ok(has_rooms) => has_rooms,
-        Err(_) => false
-    }
+    diesel::select(diesel::dsl::exists(rooms.filter(storey_id.eq(id))))
+        .get_result(&conn)
+        .unwrap_or(false)
 }
 
 pub fn get_rooms() -> Vec<Room> {
@@ -69,8 +68,5 @@ pub fn create_or_update_room(id: Option<uuid::Uuid>, room_name: String, room_sto
 
 pub fn delete_room_by_id(id: uuid::Uuid) -> bool {
     let conn = connection().unwrap();
-    match diesel::delete(rooms.find(id)).execute(&conn) {
-        Ok(1) => true,
-        _ => false
-    }
+    matches!(diesel::delete(rooms.find(id)).execute(&conn), Ok(1))
 }

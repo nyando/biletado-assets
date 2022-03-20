@@ -15,10 +15,9 @@ use crate::dbconn::connection;
 
 pub fn has_storeys(id: uuid::Uuid) -> bool {
     let conn = connection().unwrap();
-    match diesel::select(diesel::dsl::exists(storeys.filter(building_id.eq(id)))).get_result(&conn) {
-        Ok(has_storeys) => has_storeys,
-        Err(_) => false
-    }
+    diesel::select(diesel::dsl::exists(storeys.filter(building_id.eq(id))))
+        .get_result(&conn)
+        .unwrap_or(false)
 }
 
 pub fn get_storeys() -> Vec<Storey> {
@@ -61,7 +60,7 @@ pub fn create_or_update_storey(id: Option<uuid::Uuid>, storey_name: String, stor
             
             let new_storey = Storey {
                 id: Uuid::new_v4(),
-                name: storey_name.to_string(),
+                name: storey_name,
                 building_id: storey_building_id
             };
             
@@ -75,8 +74,5 @@ pub fn create_or_update_storey(id: Option<uuid::Uuid>, storey_name: String, stor
 
 pub fn delete_storey_by_id(id: uuid::Uuid) -> bool {
     let conn = connection().unwrap();
-    match diesel::delete(storeys.find(id)).execute(&conn) {
-        Ok(1) => true,
-        _ => false
-    }
+    matches!(diesel::delete(storeys.find(id)).execute(&conn), Ok(1))
 }
