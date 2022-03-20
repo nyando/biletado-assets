@@ -4,6 +4,18 @@ This is a microservice implmenting the backend `assets`-API for the Biletado sys
 
 ## Build
 
+Building the project requires the following dependencies:
+
+- PostgreSQL
+  - Linux: `libpq`
+  - Windows:
+    - install the [PostgreSQL application](https://www.postgresql.org/download/)
+    - put the PostgreSQL subfolders `bin` and `lib` folders in your `PATH`
+    - create the environment variable `PQ_LIB_DIR` and set it to the PSQL `lib` folder
+- OpenSSL
+  - Linux: `libopenssl` or equivalent
+  - Windows: [Follow these instructions](https://stackoverflow.com/a/61921362)
+
 The service is developed in Rust and uses the `cargo` build tool.
 To fetch dependencies and build the project, run the following command in the project directory:
 
