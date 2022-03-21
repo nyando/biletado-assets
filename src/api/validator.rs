@@ -10,9 +10,10 @@ mod tests {
 
     #[test]
     fn test_successful_validation() {
+        // change this to a purposeful fail to test CI/CD pipeline
         let test_input = "a4a443c6-0aad-4c1f-a623-e2c2dfc5780c".to_string();
         let uuid = validate_uuid(test_input);
-        assert!(uuid.is_some());
+        assert!(uuid.is_none());
     }
     
     #[test]
