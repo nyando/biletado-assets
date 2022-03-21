@@ -48,6 +48,6 @@ async fn main() -> std::io::Result<()> {
             .service(get_room_by_id)
             .service(update_room)
             .service(delete_room)
-    }).bind(("localhost", 9000))?.run().await
+    }).bind(("0.0.0.0", 9000))?.run().await
 
 }
