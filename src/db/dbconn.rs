@@ -29,9 +29,9 @@ lazy_static! {
     };
 }
 
-pub fn init() {
+pub fn init() -> Result<DbConnection, r2d2::Error> {
     lazy_static::initialize(&POOL);
-    connection().expect("failed to connect to DB");
+    connection()
 }
 
 pub fn connection() -> Result<DbConnection, r2d2::Error> {

@@ -17,6 +17,8 @@ use crate::api::storeys_api::*;
 use actix_web::{App, HttpServer};
 use log::info;
 
+use std::io::{ErrorKind, Error};
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
@@ -25,10 +27,10 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
     
     info!("attempting to connect to database service...");
-    dbconn::init();
+    if dbconn::init().is_err() { return Err(Error::new(ErrorKind::Other, "could not connect to DB service")); }
     info!("database connection successful");
 
-    info!("starting API service running on port 8081");
+    info!("starting API service");
     HttpServer::new(|| {
         App::new()
             .service(get_all_buildings)
