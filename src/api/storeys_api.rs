@@ -7,6 +7,8 @@ use crate::db::crud::rooms_crud::has_rooms;
 use crate::db::crud::buildings_crud::find_building_by_id;
 use crate::db::models::OptionalIDStorey;
 
+use log::{info, error};
+
 #[get("/assets/storeys")]
 async fn get_all_storeys() -> impl Responder {
     let result = serde_json::to_string(&get_storeys()).unwrap();

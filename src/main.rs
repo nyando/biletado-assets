@@ -1,15 +1,13 @@
 mod db;
 
-// comment this crate out for local testing
-extern crate openssl;
 #[macro_use]
 extern crate diesel;
+extern crate openssl;
 
 mod api;
 
-#[macro_use]
-extern crate log;
-extern crate env_logger;
+use log;
+use env_logger;
 
 use dotenv::dotenv;
 use crate::db::dbconn;
