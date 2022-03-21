@@ -1,5 +1,3 @@
-extern crate serde;
-
 use diesel::{Queryable, Insertable, Identifiable};
 use serde::{Serialize, Deserialize};
 use crate::db::schema::*;

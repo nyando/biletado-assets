@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 
 use crate::db::models::*;
 
