@@ -19,12 +19,16 @@ use log::info;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+
+    info!("initializing logging...");
     dotenv().ok();
     env_logger::init();
-    dbconn::init();
-
-    info!("assets API service running on port 8081");
     
+    info!("attempting to connect to database service...");
+    dbconn::init();
+    info!("database connection successful");
+
+    info!("starting API service running on port 8081");
     HttpServer::new(|| {
         App::new()
             .service(get_all_buildings)
@@ -42,5 +46,6 @@ async fn main() -> std::io::Result<()> {
             .service(get_room_by_id)
             .service(update_room)
             .service(delete_room)
-    }).bind(("127.0.0.1", 8081))?.run().await
+    }).bind(("localhost", 8081))?.run().await
+
 }
