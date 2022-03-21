@@ -1,12 +1,12 @@
 mod db;
 
+extern crate openssl;
+
 #[macro_use]
 extern crate diesel;
-extern crate openssl;
 
 mod api;
 
-use log;
 use env_logger;
 
 use dotenv::dotenv;
