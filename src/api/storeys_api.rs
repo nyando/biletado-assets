@@ -11,8 +11,9 @@ use log::{info, error};
 
 #[get("/assets/storeys")]
 async fn get_all_storeys() -> impl Responder {
-    let result = serde_json::to_string(&get_storeys()).unwrap();
-    info!("found {} storeys", result.len());
+    let storeys = get_storeys();
+    let result = serde_json::to_string(&storeys).unwrap();
+    info!("found {} storeys", storeys.len());
     HttpResponse::Ok().json(result)
 }
 

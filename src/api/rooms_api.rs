@@ -10,8 +10,9 @@ use log::{info, error};
 
 #[get("/assets/rooms")]
 async fn get_all_rooms() -> impl Responder {
-    let result = serde_json::to_string(&get_rooms()).unwrap();
-    info!("found {} rooms", result.len());
+    let rooms = get_rooms();
+    let result = serde_json::to_string(&rooms).unwrap();
+    info!("found {} rooms", rooms.len());
     HttpResponse::Ok().json(result)
 }
 
