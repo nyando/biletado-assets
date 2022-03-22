@@ -5,6 +5,9 @@ use crate::api::validator::validate_uuid;
 use crate::db::crud::rooms_crud::*;
 use crate::db::crud::storeys_crud::find_storey_by_id;
 use crate::db::models::OptionalIDRoom;
+use crate::db::models::Reservation;
+
+use std::env;
 
 use log::{info, error};
 
@@ -118,9 +121,18 @@ async fn delete_room(id: web::Path<String>) -> impl Responder {
         return HttpResponse::BadRequest().json(json!({ "message": "invalid UUID in parameters" }));
     }
 
-    // TODO check that no reservations exist before deleting room
-    
     let param_id = param_id.unwrap();
+    if let Some(has_reservations) = has_room_reservations(param_id) {
+        if has_reservations {
+            info!("room {} has existing reservations, cannot delete", param_id);
+            HttpResponse::UnprocessableEntity().json(
+                json!({ "message": format!("room {} has existing reservations", param_id) })
+            );
+        } else {
+            info!("room {} has no associated reservations, ok to delete", param_id);
+        }
+    }
+    
     if delete_room_by_id(param_id) {
         info!("deleted room {}", param_id);
         HttpResponse::NoContent().finish()
@@ -129,4 +141,20 @@ async fn delete_room(id: web::Path<String>) -> impl Responder {
         HttpResponse::NotFound().finish()
     }
 
+}
+
+fn has_room_reservations(delete_room_id: uuid::Uuid) -> Option<bool> {
+
+    let reservations_host = env::var("RESERVATIONS_HOST").expect("RESERVATIONS_HOST variable not set");
+    let reservations_port = env::var("RESERVATIONS_PORT").expect("RESERVATIONS_PORT variable not set");
+    
+    let reservations_url  = format!("http://{}:{}/reservations/", reservations_host, reservations_port);
+
+    let resp = reqwest::blocking::get(reservations_url).ok()?;
+    if resp.status().is_success() {
+        let reservations : Vec<Reservation> = resp.json().ok()?;
+        Some(reservations.iter().any(|res| res.room_id == delete_room_id))
+    } else {
+        None
+    }
 }

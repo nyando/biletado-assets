@@ -7,8 +7,6 @@ extern crate diesel;
 
 mod api;
 
-use env_logger;
-
 use dotenv::dotenv;
 use crate::db::dbconn;
 use crate::api::buildings_api::*;

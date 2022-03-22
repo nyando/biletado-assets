@@ -43,3 +43,11 @@ pub struct OptionalIDRoom {
     pub name: String,
     pub storey_id: uuid::Uuid
 }
+
+#[derive(Deserialize)]
+pub struct Reservation {
+    pub id: uuid::Uuid,
+    pub from: String,
+    pub to: String,
+    pub room_id: uuid::Uuid
+}
