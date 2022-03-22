@@ -11,7 +11,7 @@ use std::env;
 
 use log::{info, error};
 
-#[get("/assets/rooms")]
+#[get("/rooms")]
 async fn get_all_rooms() -> impl Responder {
     let rooms = get_rooms();
     let result = serde_json::to_string(&rooms).unwrap();
@@ -19,7 +19,7 @@ async fn get_all_rooms() -> impl Responder {
     HttpResponse::Ok().json(result)
 }
 
-#[post("/assets/rooms")]
+#[post("/rooms")]
 async fn add_room(req_body: String) -> impl Responder {
 
     let body_content : Result<OptionalIDRoom, serde_json::Error> = serde_json::from_str(&req_body);
@@ -46,7 +46,7 @@ async fn add_room(req_body: String) -> impl Responder {
     }
 }
 
-#[get("/assets/rooms/{id}")]
+#[get("/rooms/{id}")]
 async fn get_room_by_id(id: web::Path<String>) -> impl Responder {
 
     let room_uuid = validate_uuid(id.to_string());
@@ -70,7 +70,7 @@ async fn get_room_by_id(id: web::Path<String>) -> impl Responder {
 
 }
 
-#[put("/assets/rooms/{id}")]
+#[put("/rooms/{id}")]
 async fn update_room(id: web::Path<String>, req_body: String) -> impl Responder {
 
     let param_id = validate_uuid(id.to_string());
@@ -112,7 +112,7 @@ async fn update_room(id: web::Path<String>, req_body: String) -> impl Responder 
 
 }
 
-#[delete("/assets/rooms/{id}")]
+#[delete("/rooms/{id}")]
 async fn delete_room(id: web::Path<String>) -> impl Responder {
 
     let param_id = validate_uuid(id.to_string());
@@ -131,6 +131,9 @@ async fn delete_room(id: web::Path<String>) -> impl Responder {
         } else {
             info!("room {} has no associated reservations, ok to delete", param_id);
         }
+    } else {
+        error!("error getting reservation data for room {}, not deleting", param_id);
+        return HttpResponse::NotFound().finish();
     }
     
     if delete_room_by_id(param_id) {

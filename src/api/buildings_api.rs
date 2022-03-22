@@ -8,7 +8,7 @@ use crate::db::models::OptionalIDBuilding;
 
 use log::{info, error};
 
-#[get("/assets/buildings")]
+#[get("/buildings")]
 async fn get_all_buildings() -> impl Responder {
     let buildings = get_buildings();
     let result = serde_json::to_string(&buildings).unwrap();
@@ -16,7 +16,7 @@ async fn get_all_buildings() -> impl Responder {
     HttpResponse::Ok().json(result)
 }
 
-#[post("/assets/buildings")]
+#[post("/buildings")]
 async fn add_building(req_body: String) -> impl Responder {
     let body_content : Result<OptionalIDBuilding, serde_json::Error> = serde_json::from_str(&req_body);
     if body_content.is_err() {
@@ -37,7 +37,7 @@ async fn add_building(req_body: String) -> impl Responder {
     }
 }
 
-#[get("/assets/buildings/{id}")]
+#[get("/buildings/{id}")]
 async fn get_building_by_id(id: web::Path<String>) -> impl Responder {
     let building_uuid = validate_uuid(id.to_string());
 
@@ -59,7 +59,7 @@ async fn get_building_by_id(id: web::Path<String>) -> impl Responder {
     }
 }
 
-#[put("/assets/buildings/{id}")]
+#[put("/buildings/{id}")]
 async fn update_building(id: web::Path<String>, req_body: String) -> impl Responder {
     
     let param_id = validate_uuid(id.to_string());
@@ -96,7 +96,7 @@ async fn update_building(id: web::Path<String>, req_body: String) -> impl Respon
 
 }
 
-#[delete("/assets/buildings/{id}")]
+#[delete("/buildings/{id}")]
 async fn delete_building(id: web::Path<String>) -> impl Responder {
 
     let param_id = validate_uuid(id.to_string());

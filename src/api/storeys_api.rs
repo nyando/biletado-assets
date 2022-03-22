@@ -9,7 +9,7 @@ use crate::db::models::OptionalIDStorey;
 
 use log::{info, error};
 
-#[get("/assets/storeys")]
+#[get("/storeys")]
 async fn get_all_storeys() -> impl Responder {
     let storeys = get_storeys();
     let result = serde_json::to_string(&storeys).unwrap();
@@ -17,7 +17,7 @@ async fn get_all_storeys() -> impl Responder {
     HttpResponse::Ok().json(result)
 }
 
-#[post("/assets/storeys")]
+#[post("/storeys")]
 async fn add_storey(req_body: String) -> impl Responder {
 
     let body_content : Result<OptionalIDStorey, serde_json::Error> = serde_json::from_str(&req_body);
@@ -45,7 +45,7 @@ async fn add_storey(req_body: String) -> impl Responder {
 
 }
 
-#[get("/assets/storeys/{id}")]
+#[get("/storeys/{id}")]
 async fn get_storey_by_id(id: web::Path<String>) -> impl Responder {
     
     let storey_uuid = validate_uuid(id.to_string());
@@ -68,7 +68,7 @@ async fn get_storey_by_id(id: web::Path<String>) -> impl Responder {
     }
 }
 
-#[put("/assets/storeys/{id}")]
+#[put("/storeys/{id}")]
 async fn update_storey(id: web::Path<String>, req_body: String) -> impl Responder {
 
     let param_id = validate_uuid(id.to_string());
@@ -110,7 +110,7 @@ async fn update_storey(id: web::Path<String>, req_body: String) -> impl Responde
 
 }
 
-#[delete("/assets/storeys/{id}")]
+#[delete("/storeys/{id}")]
 async fn delete_storey(id: web::Path<String>) -> impl Responder {
 
     let param_id = validate_uuid(id.to_string());
