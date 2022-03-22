@@ -53,6 +53,10 @@ The resulting binary is then copied into the `scratch` empty container, where it
 The resulting total container size amounts to a few megabytes,
 compared to the 2 GB base size of a Rust docker container.
 
+**NOTE**: The `HttpServer` that provides the API must be bound to `0.0.0.0` instead of `localhost`,
+as it will refuse outside connections otherwise (TCP `56 connection refused`).
+`localhost` works for local testing, but fails in Docker (RIP my Monday evening).
+
 ## CI/CD Pipeline
 
 `biletado-assets` uses _GitHub Actions_ as a continuous integration system.
