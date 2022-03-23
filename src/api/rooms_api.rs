@@ -1,7 +1,7 @@
 use actix_web::{get, post, put, delete, HttpRequest, HttpResponse, Responder, web};
 use serde_json::{json};
 
-use crate::api::validator::validate_uuid;
+use crate::api::util::{get_jaeger_params, validate_uuid};
 use crate::db::crud::rooms_crud::*;
 use crate::db::crud::storeys_crud::find_storey_by_id;
 use crate::db::models::OptionalIDRoom;
@@ -114,11 +114,6 @@ async fn update_room(id: web::Path<String>, req_body: String) -> impl Responder 
 
 #[delete("/rooms/{id}")]
 async fn delete_room(id: web::Path<String>, req: HttpRequest) -> impl Responder {
-
-    let jaeger_key = env::var("JAEGER_HEADER").unwrap_or("Uber-Trace-Id".to_string());
-    debug!("found jaeger key {}", jaeger_key);
-    let jaeger_id = req.headers().get(&jaeger_key).unwrap().to_str().unwrap();
-    debug!("found jaeger value {}", jaeger_id);
     
     let param_id = validate_uuid(id.to_string());
     if param_id.is_none() {
@@ -127,6 +122,7 @@ async fn delete_room(id: web::Path<String>, req: HttpRequest) -> impl Responder 
     }
 
     let param_id = param_id.unwrap();
+    let (jaeger_key, jaeger_id) = get_jaeger_params(req);
     if let Some(has_reservations) = has_room_reservations(param_id, &jaeger_key, &jaeger_id) {
         if has_reservations {
             info!("room {} has existing reservations, cannot delete", param_id);

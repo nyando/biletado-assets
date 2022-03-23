@@ -1,7 +1,7 @@
 use actix_web::{get, post, put, delete, HttpResponse, Responder, web};
 use serde_json::{json};
 
-use crate::api::validator::validate_uuid;
+use crate::api::util::validate_uuid;
 use crate::db::crud::storeys_crud::*;
 use crate::db::crud::rooms_crud::has_rooms;
 use crate::db::crud::buildings_crud::find_building_by_id;
