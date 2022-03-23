@@ -9,7 +9,7 @@ use crate::db::models::Reservation;
 
 use std::env;
 
-use log::{info, error};
+use log::{debug, info, error};
 
 #[get("/rooms")]
 async fn get_all_rooms() -> impl Responder {
@@ -125,7 +125,7 @@ async fn delete_room(id: web::Path<String>) -> impl Responder {
     if let Some(has_reservations) = has_room_reservations(param_id) {
         if has_reservations {
             info!("room {} has existing reservations, cannot delete", param_id);
-            HttpResponse::UnprocessableEntity().json(
+            return HttpResponse::UnprocessableEntity().json(
                 json!({ "message": format!("room {} has existing reservations", param_id) })
             );
         } else {
@@ -151,13 +151,19 @@ fn has_room_reservations(delete_room_id: uuid::Uuid) -> Option<bool> {
     let reservations_host = env::var("RESERVATIONS_HOST").expect("RESERVATIONS_HOST variable not set");
     let reservations_port = env::var("RESERVATIONS_PORT").expect("RESERVATIONS_PORT variable not set");
     
-    let reservations_url  = format!("http://{}:{}/reservations/", reservations_host, reservations_port);
+    let reservations_url  = format!("http://{}:{}/api/reservations/", reservations_host, reservations_port);
 
     let resp = reqwest::blocking::get(reservations_url).ok()?;
     if resp.status().is_success() {
         let reservations : Vec<Reservation> = resp.json().ok()?;
+
+        for reservation in &reservations {
+            debug!("found reservation {} from {} to {} in room {}", reservation.id, reservation.from, reservation.to, reservation.room_id);
+        }
+
         Some(reservations.iter().any(|res| res.room_id == delete_room_id))
     } else {
+        debug!("no reservations found");
         None
     }
 }
