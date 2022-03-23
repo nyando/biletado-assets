@@ -1,4 +1,4 @@
-use actix_web::{get, post, put, delete, HttpResponse, Responder, web};
+use actix_web::{get, post, put, delete, HttpRequest, HttpResponse, Responder, web};
 use serde_json::{json};
 
 use crate::api::validator::validate_uuid;
@@ -113,8 +113,13 @@ async fn update_room(id: web::Path<String>, req_body: String) -> impl Responder 
 }
 
 #[delete("/rooms/{id}")]
-async fn delete_room(id: web::Path<String>) -> impl Responder {
+async fn delete_room(id: web::Path<String>, req: HttpRequest) -> impl Responder {
 
+    let jaeger_key = env::var("JAEGER_HEADER").unwrap_or("Uber-Trace-Id".to_string());
+    debug!("found jaeger key {}", jaeger_key);
+    let jaeger_id = req.headers().get(&jaeger_key).unwrap().to_str().unwrap();
+    debug!("found jaeger value {}", jaeger_id);
+    
     let param_id = validate_uuid(id.to_string());
     if param_id.is_none() {
         error!("invalid param UUID: {}", id);
@@ -122,7 +127,7 @@ async fn delete_room(id: web::Path<String>) -> impl Responder {
     }
 
     let param_id = param_id.unwrap();
-    if let Some(has_reservations) = has_room_reservations(param_id) {
+    if let Some(has_reservations) = has_room_reservations(param_id, &jaeger_key, &jaeger_id) {
         if has_reservations {
             info!("room {} has existing reservations, cannot delete", param_id);
             return HttpResponse::UnprocessableEntity().json(
@@ -146,21 +151,21 @@ async fn delete_room(id: web::Path<String>) -> impl Responder {
 
 }
 
-fn has_room_reservations(delete_room_id: uuid::Uuid) -> Option<bool> {
+fn has_room_reservations(delete_room_id: uuid::Uuid, jaeger_key: &str, jaeger_id: &str) -> Option<bool> {
 
     let reservations_host = env::var("RESERVATIONS_HOST").expect("RESERVATIONS_HOST variable not set");
     let reservations_port = env::var("RESERVATIONS_PORT").expect("RESERVATIONS_PORT variable not set");
     
     let reservations_url  = format!("http://{}:{}/api/reservations/", reservations_host, reservations_port);
 
-    let resp = reqwest::blocking::get(reservations_url).ok()?;
+    let client = reqwest::blocking::Client::new();
+    let resp = client.get(reservations_url)
+                     .header(jaeger_key, jaeger_id)
+                     .send().ok()?;
+    
     if resp.status().is_success() {
         let reservations : Vec<Reservation> = resp.json().ok()?;
-
-        for reservation in &reservations {
-            debug!("found reservation {} from {} to {} in room {}", reservation.id, reservation.from, reservation.to, reservation.room_id);
-        }
-
+        debug!("received reservations from backend");
         Some(reservations.iter().any(|res| res.room_id == delete_room_id))
     } else {
         debug!("no reservations found");
