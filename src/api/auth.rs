@@ -29,10 +29,10 @@ fn fetch_keycloak_pubkey(jaeger_key: String, jaeger_id: String) -> Option<Decodi
         
         let pubkey : KeycloakPublicKey = resp.json().ok()?;
         
-        let mut pem_key = "-----BEGIN CERTIFICATE-----\n".to_owned();
+        let mut pem_key = "-----BEGIN RSA PUBLIC KEY-----\n".to_owned();
         pem_key.push_str(&pubkey.public_key);
-        pem_key.push_str("\n-----END CERTIFICATE-----");
-        debug!("received public key {} from keycloak", pubkey.public_key);
+        pem_key.push_str("\n-----END RSA PUBLIC KEY-----");
+        debug!("received public key {} from keycloak", pem_key);
         
         let decoding_key = DecodingKey::from_rsa_pem(pem_key.as_bytes()).ok()?;
         Some(decoding_key)
@@ -49,7 +49,7 @@ struct Claims { }
 
 fn validate_auth(token: String, decoding_key: DecodingKey) -> Option<bool> {
 
-    debug!("attempting to validate token");
+    debug!("attempting to validate token {}", token);
 
     let token_msg = decode::<Claims>(
         &token,
@@ -81,7 +81,11 @@ pub async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<S
         return Err(AuthenticationError::from(config).into());
     }
 
-    match validate_auth(credentials.token().to_string(), pubkey.unwrap()) {
+    let token = credentials.token().to_string();
+    
+    debug!("extracted token successfully, attempting to validate");
+
+    match validate_auth(token, pubkey.unwrap()) {
         Some(res) => if res { Ok(req) } else { Err(AuthenticationError::from(config).into()) },
         None => Err(AuthenticationError::from(config).into())
     }
