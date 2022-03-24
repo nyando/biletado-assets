@@ -26,10 +26,17 @@ fn fetch_keycloak_pubkey(jaeger_key: String, jaeger_id: String) -> Option<Decodi
                      .send().ok()?;
 
     if resp.status().is_success() {
+        
         let pubkey : KeycloakPublicKey = resp.json().ok()?;
+        
+        let mut pem_key = "-----BEGIN CERTIFICATE-----\n".to_owned();
+        pem_key.push_str(&pubkey.public_key);
+        pem_key.push_str("\n-----END CERTIFICATE-----");
         debug!("received public key {} from keycloak", pubkey.public_key);
-        let decoding_key = DecodingKey::from_rsa_pem(pubkey.public_key.as_bytes()).ok()?;
+        
+        let decoding_key = DecodingKey::from_rsa_pem(pem_key.as_bytes()).ok()?;
         Some(decoding_key)
+
     } else {
         debug!("error while trying to get keycloak public key");
         None
@@ -40,13 +47,17 @@ fn fetch_keycloak_pubkey(jaeger_key: String, jaeger_id: String) -> Option<Decodi
 #[derive(Deserialize)]
 struct Claims { }
 
-pub fn validate_auth(token: String, decoding_key: DecodingKey) -> Option<bool> {
+fn validate_auth(token: String, decoding_key: DecodingKey) -> Option<bool> {
 
     let token_msg = decode::<Claims>(
         &token,
         &decoding_key,
         &Validation::new(Algorithm::RS256)
     );
+
+    if token_msg.is_err() {
+        debug!("error while decoding json web token {}", token);
+    }
 
     Some(token_msg.is_ok())
 
@@ -57,7 +68,11 @@ pub async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<S
     let (jaeger_key, jaeger_id) = get_jaeger_params(&req);
     let pubkey = fetch_keycloak_pubkey(jaeger_key, jaeger_id);
 
+    debug!("attempting to validate credentials");
+
     let config = req.app_data::<Config>().map(|data| data.clone()).unwrap_or_else(Default::default);
+
+    if pubkey.is_none() { return Err(AuthenticationError::from(config).into()); }
 
     match validate_auth(credentials.token().to_string(), pubkey.unwrap()) {
         Some(res) => if res { Ok(req) } else { Err(AuthenticationError::from(config).into()) },
