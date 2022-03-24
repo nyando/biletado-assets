@@ -108,7 +108,7 @@ async fn delete_building(id: web::Path<String>) -> impl Responder {
     let param_id = param_id.unwrap();
     if has_storeys(param_id) {
         error!("cannot delete building {}, has existing storeys", param_id);
-        HttpResponse::UnprocessableEntity().json(json!({ "message": "building has existing storeys" }));
+        return HttpResponse::UnprocessableEntity().json(json!({ "message": "building has existing storeys" }));
     }
     
     if delete_building_by_id(param_id) {

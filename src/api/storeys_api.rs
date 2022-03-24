@@ -122,7 +122,7 @@ async fn delete_storey(id: web::Path<String>) -> impl Responder {
     let param_id = param_id.unwrap();
     if has_rooms(param_id) {
         error!("cannot delete storey {}, has existing rooms", param_id);
-        HttpResponse::UnprocessableEntity().json(json!({ "message": "storey has existing rooms" }));
+        return HttpResponse::UnprocessableEntity().json(json!({ "message": "storey has existing rooms" }));
     }
     
     if delete_storey_by_id(param_id) {

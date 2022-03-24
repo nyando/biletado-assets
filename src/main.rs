@@ -15,9 +15,10 @@ use crate::db::dbconn;
 use crate::api::buildings_api::*;
 use crate::api::rooms_api::*;
 use crate::api::storeys_api::*;
+use crate::api::auth::validator;
 
-use actix_web::{middleware::Logger, web, middleware::DefaultHeaders, App, HttpServer};
-use actix_web_opentelemetry::RequestTracing;
+use actix_web::{middleware::Logger, middleware::NormalizePath, web, middleware::DefaultHeaders, App, HttpServer};
+use actix_web_httpauth::middleware::HttpAuthentication;
 
 use std::io::{ErrorKind, Error};
 
@@ -34,25 +35,32 @@ async fn main() -> std::io::Result<()> {
 
     info!("starting API service");
     HttpServer::new(|| {
+
+        let jwtauth = HttpAuthentication::bearer(validator);
+
         App::new()
             .wrap(Logger::default())
-            .wrap(RequestTracing::new())
             .wrap(DefaultHeaders::new().add(("Content-Type", "application/json")))
+            .wrap(NormalizePath::trim())
             .service(
                 web::scope("/assets")
                     .service(get_all_buildings)
-                    .service(add_building)
                     .service(get_building_by_id)
+                    .service(get_all_storeys)
+                    .service(get_storey_by_id)
+                    .service(get_all_rooms)
+                    .service(get_room_by_id)
+            )
+            .wrap(jwtauth)
+            .service(
+                web::scope("/assets")
+                    .service(add_building)
                     .service(update_building)
                     .service(delete_building)
-                    .service(get_all_storeys)
                     .service(add_storey)
-                    .service(get_storey_by_id)
                     .service(update_storey)
                     .service(delete_storey)
-                    .service(get_all_rooms)
                     .service(add_room)
-                    .service(get_room_by_id)
                     .service(update_room)
                     .service(delete_room)
             )

@@ -1,3 +1,4 @@
+use actix_web::dev::ServiceRequest;
 use actix_web::{get, post, put, delete, HttpRequest, HttpResponse, Responder, web};
 use serde_json::{json};
 
@@ -122,7 +123,7 @@ async fn delete_room(id: web::Path<String>, req: HttpRequest) -> impl Responder 
     }
 
     let param_id = param_id.unwrap();
-    let (jaeger_key, jaeger_id) = get_jaeger_params(req);
+    let (jaeger_key, jaeger_id) = get_jaeger_params(&ServiceRequest::from_request(req));
     if let Some(has_reservations) = has_room_reservations(param_id, &jaeger_key, &jaeger_id) {
         if has_reservations {
             info!("room {} has existing reservations, cannot delete", param_id);

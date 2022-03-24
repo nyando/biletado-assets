@@ -1,9 +1,12 @@
-use actix_web::HttpRequest;
+use actix_web::dev::ServiceRequest;
+
 use log::debug;
+
 use std::env;
+
 use uuid::Uuid;
 
-pub fn get_jaeger_params(req: HttpRequest) -> (String, String) {
+pub fn get_jaeger_params(req: &ServiceRequest) -> (String, String) {
 
     let jaeger_key = env::var("JAEGER_HEADER").unwrap_or("Uber-Trace-Id".to_string());
     debug!("found jaeger key {}", jaeger_key);
