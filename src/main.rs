@@ -31,6 +31,8 @@ async fn main() -> std::io::Result<()> {
     if dbconn::init().is_err() { return Err(Error::new(ErrorKind::Other, "could not connect to DB service")); }
     info!("database connection successful");
 
+    // let realm_name = env::var("KEYCLOAK_REALM").unwrap_or("biletado".to_string()).to_string();
+
     info!("starting API service");
     HttpServer::new(|| {
 

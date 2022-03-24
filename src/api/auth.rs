@@ -49,6 +49,8 @@ struct Claims { }
 
 fn validate_auth(token: String, decoding_key: DecodingKey) -> Option<bool> {
 
+    debug!("attempting to validate token");
+
     let token_msg = decode::<Claims>(
         &token,
         &decoding_key,
@@ -71,8 +73,13 @@ pub async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<S
     debug!("attempting to validate credentials");
 
     let config = req.app_data::<Config>().map(|data| data.clone()).unwrap_or_else(Default::default);
+    
+    debug!("successfully initialized config structure");
 
-    if pubkey.is_none() { return Err(AuthenticationError::from(config).into()); }
+    if pubkey.is_none() {
+        debug!("keycloak public key not found");
+        return Err(AuthenticationError::from(config).into());
+    }
 
     match validate_auth(credentials.token().to_string(), pubkey.unwrap()) {
         Some(res) => if res { Ok(req) } else { Err(AuthenticationError::from(config).into()) },
