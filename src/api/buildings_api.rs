@@ -1,12 +1,14 @@
 use actix_web::{get, post, put, delete, HttpResponse, Responder, web};
+use actix_web_httpauth::middleware::HttpAuthentication;
+
+use log::{info, error};
 use serde_json::{json};
 
+use crate::api::auth::validator;
 use crate::api::util::validate_uuid;
 use crate::db::crud::buildings_crud::*;
 use crate::db::crud::storeys_crud::has_storeys;
 use crate::db::models::OptionalIDBuilding;
-
-use log::{info, error};
 
 #[get("/buildings")]
 async fn get_all_buildings() -> impl Responder {
@@ -16,7 +18,7 @@ async fn get_all_buildings() -> impl Responder {
     HttpResponse::Ok().json(result)
 }
 
-#[post("/buildings")]
+#[post("/buildings", wrap="HttpAuthentication::bearer(validator)")]
 async fn add_building(req_body: String) -> impl Responder {
     let body_content : Result<OptionalIDBuilding, serde_json::Error> = serde_json::from_str(&req_body);
     if body_content.is_err() {
@@ -59,7 +61,7 @@ async fn get_building_by_id(id: web::Path<String>) -> impl Responder {
     }
 }
 
-#[put("/buildings/{id}")]
+#[put("/buildings/{id}", wrap="HttpAuthentication::bearer(validator)")]
 async fn update_building(id: web::Path<String>, req_body: String) -> impl Responder {
     
     let param_id = validate_uuid(id.to_string());
@@ -96,7 +98,7 @@ async fn update_building(id: web::Path<String>, req_body: String) -> impl Respon
 
 }
 
-#[delete("/buildings/{id}")]
+#[delete("/buildings/{id}", wrap="HttpAuthentication::bearer(validator)")]
 async fn delete_building(id: web::Path<String>) -> impl Responder {
 
     let param_id = validate_uuid(id.to_string());

@@ -1,16 +1,16 @@
-use actix_web::dev::ServiceRequest;
-use actix_web::{get, post, put, delete, HttpRequest, HttpResponse, Responder, web};
-use serde_json::{json};
+use actix_web::{dev::ServiceRequest, get, post, put, delete, HttpRequest, HttpResponse, Responder, web};
+use actix_web_httpauth::middleware::HttpAuthentication;
 
+use log::{debug, info, error};
+use serde_json::{json};
+use std::env;
+
+use crate::api::auth::validator;
 use crate::api::util::{get_jaeger_params, validate_uuid};
 use crate::db::crud::rooms_crud::*;
 use crate::db::crud::storeys_crud::find_storey_by_id;
 use crate::db::models::OptionalIDRoom;
 use crate::db::models::Reservation;
-
-use std::env;
-
-use log::{debug, info, error};
 
 #[get("/rooms")]
 async fn get_all_rooms() -> impl Responder {
@@ -20,7 +20,7 @@ async fn get_all_rooms() -> impl Responder {
     HttpResponse::Ok().json(result)
 }
 
-#[post("/rooms")]
+#[post("/rooms", wrap="HttpAuthentication::bearer(validator)")]
 async fn add_room(req_body: String) -> impl Responder {
 
     let body_content : Result<OptionalIDRoom, serde_json::Error> = serde_json::from_str(&req_body);
@@ -71,7 +71,7 @@ async fn get_room_by_id(id: web::Path<String>) -> impl Responder {
 
 }
 
-#[put("/rooms/{id}")]
+#[put("/rooms/{id}", wrap="HttpAuthentication::bearer(validator)")]
 async fn update_room(id: web::Path<String>, req_body: String) -> impl Responder {
 
     let param_id = validate_uuid(id.to_string());
@@ -113,7 +113,7 @@ async fn update_room(id: web::Path<String>, req_body: String) -> impl Responder 
 
 }
 
-#[delete("/rooms/{id}")]
+#[delete("/rooms/{id}", wrap="HttpAuthentication::bearer(validator)")]
 async fn delete_room(id: web::Path<String>, req: HttpRequest) -> impl Responder {
     
     let param_id = validate_uuid(id.to_string());
