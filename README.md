@@ -47,8 +47,8 @@ The rest of the service consists of two modules:
 
 ### Database: The `db` Module
 
-The database connectivity is implemented with `diesel` ORM in the `db` module.
-Connections are handled with the `r2d2` library,
+The database connectivity is implemented with the `diesel` ORM in the `db` module.
+Connections to the DB are handled with the `r2d2` library,
 which allows for creation of a thread pool to handle incoming requests,
 so that connections are not created and destroyed for every request.
 Functionality for establishing a database connection is located in the `db::dbconn` submodule.

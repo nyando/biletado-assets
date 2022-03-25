@@ -10,10 +10,14 @@ use std::env;
 use crate::api::util::get_jaeger_params;
 
 #[derive(Deserialize)]
+/// Struct for extracting the public key from the Keycloak reply JSON.
+/// Serde just makes deserialization way too easy for me not to use it.
 struct KeycloakPublicKey {
     public_key: String
 }
 
+/// Fetch the RSA public key from a Keycloak server.
+/// The GET request should be submitted to the traefik reverse proxy and include the Jaeger tracing header.
 fn fetch_keycloak_pubkey(jaeger_key: String, jaeger_id: String) -> Option<DecodingKey> {
     
     let keycloak_host = env::var("KEYCLOAK_HOST").unwrap_or("traefik".to_string());
@@ -44,14 +48,21 @@ fn fetch_keycloak_pubkey(jaeger_key: String, jaeger_id: String) -> Option<Decodi
 }
 
 #[derive(Deserialize)]
+/// The claims deserialized from the JWT MUST contain the `exp` attribute.
 struct Claims {
     exp: usize
 }
 
+/// Validate a token using the public key from the keycloak server.
+/// Return an optional containing true if the token was decoded successfully,
+/// false if decoded with problems, None if decoding fails.
 fn validate_auth(token: String, decoding_key: DecodingKey) -> Option<bool> {
 
     debug!("attempting to validate token {}", token);
     
+    // NOOO TOUCHY. Idk why exp validation won't work,
+    // but tokens only get decoded correctly if we turn it off.
+    // Maybe an issue with the system clock?
     let mut validation = Validation::new(Algorithm::RS256);
     validation.validate_exp = false;
 
@@ -61,24 +72,23 @@ fn validate_auth(token: String, decoding_key: DecodingKey) -> Option<bool> {
         &validation
     );
 
-    if token_msg.is_err() {
-        debug!("error while decoding json web token {}", token);
-    }
+    if token_msg.is_err() { debug!("error while decoding json web token {}", token); }
 
     Some(token_msg.is_ok())
 
 }
 
+/// Validate the JWT in the Authorization header of the request.
+/// Return an authentication error in case of missing or invalid credentials.
+/// Otherwise, hand the request over to the intended handler.
 pub async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, Error> {
 
+    // get the jaeger trace header to attach to the keycloak request
     let (jaeger_key, jaeger_id) = get_jaeger_params(&req);
+
+    // fetch the public key every time because Rust lifetimes are a headache and a half
     let pubkey = fetch_keycloak_pubkey(jaeger_key, jaeger_id);
-
-    debug!("attempting to validate credentials");
-
     let config = req.app_data::<Config>().map(|data| data.clone()).unwrap_or_else(Default::default);
-    
-    debug!("successfully initialized config structure");
 
     if pubkey.is_none() {
         debug!("keycloak public key not found");

@@ -6,6 +6,8 @@ use std::env;
 
 use uuid::Uuid;
 
+/// Extract Jaeger tracing header from the received request.
+/// The header key is an environment variable with the ID `JAEGER_HEADER`.
 pub fn get_jaeger_params(req: &ServiceRequest) -> (String, String) {
 
     let jaeger_key = env::var("JAEGER_HEADER").unwrap_or("Uber-Trace-Id".to_string());
@@ -17,6 +19,8 @@ pub fn get_jaeger_params(req: &ServiceRequest) -> (String, String) {
     
 }
 
+/// Wraps the `uuid` module's string parse function to return an optional UUID from a string.
+/// A very useful function that does very useful things.
 pub fn validate_uuid(input: String) -> Option<uuid::Uuid> {
     Uuid::parse_str(&input).ok()
 }

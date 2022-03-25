@@ -1,5 +1,8 @@
 use diesel::table;
 
+// This module defines the tables and their column types in the `assets` database.
+// The `table!` macro generates ORM query methods for the structures within.
+
 table! {
     pub buildings (id) {
         id -> diesel::sql_types::Uuid,

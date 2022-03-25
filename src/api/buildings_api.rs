@@ -10,6 +10,13 @@ use crate::db::crud::buildings_crud::*;
 use crate::db::crud::storeys_crud::has_storeys;
 use crate::db::models::OptionalIDBuilding;
 
+// Yeah yeah, I know, a lot of this code is duplicated throughout the API implementation.
+// However, I couldn't really figure out how deduplicate this without using traits or macro magic,
+// which usually ends up causing more confusion, especially in a simple case like this.
+
+// Plus, this way the endpoints can vary independently without
+// having to pull large amounts of generic code into specific implementations.
+
 #[get("/buildings")]
 async fn get_all_buildings() -> impl Responder {
     let buildings = get_buildings();

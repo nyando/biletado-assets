@@ -8,6 +8,8 @@ use std::env;
 type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 pub type DbConnection = r2d2::PooledConnection<ConnectionManager<PgConnection>>;
 
+// lazily initialize the DB connection pool
+// and make it available through the reference POOL
 lazy_static! {
     static ref POOL : Pool = {
 
@@ -29,11 +31,13 @@ lazy_static! {
     };
 }
 
+/// Initialize the DB connection pool.
 pub fn init() -> Result<DbConnection, r2d2::Error> {
     lazy_static::initialize(&POOL);
     connection()
 }
 
+/// Get a database connection from the pool.
 pub fn connection() -> Result<DbConnection, r2d2::Error> {
-    POOL.get() // TODO handle error case
+    POOL.get()
 }

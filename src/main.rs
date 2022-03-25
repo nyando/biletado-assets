@@ -1,10 +1,10 @@
-mod db;
-
+// DO NOT CHANGE THE ORDER OF THESE TWO IMPORTS ON PENALTY OF DEATH
 extern crate openssl;
-
 #[macro_use]
 extern crate diesel;
+// THE DOCKER BUILD BREAKS IF YOU DON'T DO THIS
 
+mod db;
 mod api;
 
 use dotenv::dotenv;
@@ -26,14 +26,16 @@ async fn main() -> std::io::Result<()> {
     info!("initializing logging...");
     dotenv().ok();
     env_logger::init_from_env(Env::default().default_filter_or("info"));
-    
+   
+
+    // r2d2 will attempt to connect until postgres is up, don't let the error messages irritate you 
     info!("attempting to connect to database service...");
     if dbconn::init().is_err() { return Err(Error::new(ErrorKind::Other, "could not connect to DB service")); }
     info!("database connection successful");
 
+    // ...and here we go!
     info!("starting API service");
     HttpServer::new(|| {
-
         App::new()
             .wrap(Logger::default())
             .wrap(DefaultHeaders::new().add(("Content-Type", "application/json")))
@@ -56,5 +58,5 @@ async fn main() -> std::io::Result<()> {
                     .service(update_room)
                     .service(delete_room)
             )
-    }).bind(("0.0.0.0", 9000))?.run().await
+    }).bind(("0.0.0.0", 9000))?.run().await // HAS to be 0.0.0.0 or docker won't let you connect
 }
