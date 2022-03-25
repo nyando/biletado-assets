@@ -1,10 +1,11 @@
 # Biletado Assets API Backend
 
 This is a microservice implmenting the backend `assets`-API for the Biletado system.
+The service is implemented in Rust using the `actix-web` framework.
 
 ## Running the Project in the Biletado Context
 
-Clone the [compose](https://gitlab.com/nyando/compose) repository and run
+Clone the [nyando/compose](https://gitlab.com/nyando/compose) repository and run
 
 ```bash
 docker-compose up -d
@@ -50,10 +51,11 @@ The database connectivity is implemented with `diesel` ORM in the `db` module.
 Connections are handled with the `r2d2` library,
 which allows for creation of a thread pool to handle incoming requests,
 so that connections are not created and destroyed for every request.
+Functionality for establishing a database connection is located in the `db::dbconn` submodule.
 `models` contains the native Rust structures corresponding to the database objects.
 `schema` contains the corresponding database schema for the `assets` relations.
 
-The CRUD functionality relating to the `assets` API is implemented in the `crud` submodule of the `db` module.
+The CRUD functionality relating to the `assets` API is implemented in the `db::crud` submodule.
 The functionality is split by the object type (`building`, `storey`, and `room`).
 An analogous separation happens in the client-facing `api` module.
 
@@ -61,8 +63,19 @@ An analogous separation happens in the client-facing `api` module.
 
 The `api` module contains the business logic for dealing with API requests.
 The Rust framework used here is `actix-web`.
+
+The implementations of the CRUD API for `buildings`, `storeys`, and `rooms` are located in the correspondingly named module files.
+`actix-web` provides macros (`#...`) for creating HTTP routes and wrapping them in middleware modules.
+
 The `api::auth` submodule contains handlers for validating the JWT tokens in the `HttpAuthentication` middleware.
+The middleware `HttpAuthentication::bearer(validator)` in a routing macro indicates
+that the operation requires authentication with a JSON web token (JWT).
+
 The `api::util` submodule contains functions for validating the UUID inputs and extracting `Jaeger` headers from requests.
+The Jaeger header key is consistent across the entire project and should be set in the `JAEGER_HEADER` environment variable.
+Procedures that use other parts of the API (Keycloak or the `reservations` backend)
+should add this header with the corresponding request's trace value attached to enable the `Jaeger` service to track the request.
+In order for tracing to work, any requests made this way should also be routed over the reverse proxy (`traefik`).
 
 ## Dockerization
 
@@ -74,7 +87,7 @@ The resulting total container size amounts to a few megabytes,
 compared to the 2 GB base size of a Rust docker container.
 
 **NOTE**: The `HttpServer` that provides the API must be bound to `0.0.0.0` instead of `localhost`,
-as it will refuse outside connections otherwise (`CONNRESET`).
+as it will refuse outside connections otherwise (e.g. `curl` errors with `CONNRESET`).
 `localhost` works for local testing, but fails in Docker (RIP my Monday evening).
 
 ### Docker Environment Variables
@@ -97,7 +110,13 @@ as it will refuse outside connections otherwise (`CONNRESET`).
 The current pipeline compiles the project and pushes a Docker container to the `docker.io` repository.
 The pipeline also runs unit tests and fails the build if these do not pass.
 
+The unit tests are not particularly interesting,
+but function more as a proof-of-work for working integration in the CI/CD system.
+Once integration tests are available they might be integrated here too.
+
 ## Logging
 
 `biletado-assets` uses `env_logger` for logging to `stdout`.
 The log level is specifiable via the `RUST_LOG` environment variable.
+The libraries and/or frameworks used in this project use the same logging utility,
+so most `debug`/`info`/`warning`/`error` messages will probably come from other sources.
