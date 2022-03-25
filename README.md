@@ -2,7 +2,15 @@
 
 This is a microservice implmenting the backend `assets`-API for the Biletado system.
 
-## Build
+## Running the Project in the Biletado Context
+
+Clone the [compose](https://gitlab.com/nyando/compose) repository and run
+
+```bash
+docker-compose up -d
+```
+
+## Building Locally
 
 Building the project requires the following dependencies:
 
@@ -52,7 +60,7 @@ An analogous separation happens in the client-facing `api` module.
 ### Interface: The `api` Module
 
 The `api` module contains the business logic for dealing with API requests.
-The Rust framework used here is `actix`.
+The Rust framework used here is `actix-web`.
 The `api::auth` submodule contains handlers for validating the JWT tokens in the `HttpAuthentication` middleware.
 The `api::util` submodule contains functions for validating the UUID inputs and extracting `Jaeger` headers from requests.
 
