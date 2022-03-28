@@ -17,6 +17,10 @@ use crate::db::models::OptionalIDBuilding;
 // Plus, this way the endpoints can vary independently without
 // having to pull large amounts of generic code into specific implementations.
 
+// If you DID want to clean this up, macros are probably your best bet.
+// A lot of the code is structurally similar/identical with different struct types as input/output,
+// so just parametrize your macros accordingly. Traits could work too, but have fun writing THAT generic code.
+
 #[get("/buildings")]
 async fn get_all_buildings() -> impl Responder {
     let buildings = get_buildings();

@@ -15,6 +15,7 @@ docker-compose up -d
 
 Building the project requires the following dependencies:
 
+- Rust (duh), preferably an up-to-date version ;)
 - PostgreSQL
   - Linux: `libpq`
   - Windows:
@@ -112,7 +113,7 @@ The pipeline also runs unit tests and fails the build if these do not pass.
 
 The unit tests are not particularly interesting,
 but function more as a proof-of-work for working integration in the CI/CD system.
-Once integration tests are available they might be integrated here too.
+Once integration tests are available they might be integrated (_hehe_) here too.
 
 ## Logging
 
