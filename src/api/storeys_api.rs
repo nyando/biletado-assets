@@ -14,22 +14,27 @@ use crate::db::models::OptionalIDStorey;
 
 #[derive(Debug, Deserialize)]
 pub struct QueryByBuilding {
-    building_id: uuid::Uuid
+    building_id: Option<uuid::Uuid>
 }
 
-#[get("/storeys")]
+/*#[get("/storeys")]
 async fn get_all_storeys() -> impl Responder {
     let storeys = get_storeys();
     let result = serde_json::to_string(&storeys).unwrap();
     info!("found {} storeys", storeys.len());
     HttpResponse::Ok().json(result)
-}
+}*/
 
 #[get("/storeys")]
 async fn get_storeys_by_building(param: web::Query<QueryByBuilding>) -> impl Responder {
-    let storeys = storeys_by_building(param.building_id);
-    info!("found {} rooms in storey {}", storeys.len(), param.building_id);
-    HttpResponse::Ok().json(storeys)
+    let storeys = if param.building_id.is_some() {
+        storeys_by_building(param.building_id.unwrap())
+    } else {
+        get_storeys()
+    };
+    info!("found {} storeys", storeys.len());
+    let result = serde_json::to_string(&storeys).unwrap();
+    HttpResponse::Ok().json(result)
 }
 
 #[post("/storeys", wrap="HttpAuthentication::bearer(validator)")]

@@ -15,22 +15,27 @@ use crate::db::models::Reservation;
 
 #[derive(Debug, Deserialize)]
 pub struct QueryByStorey {
-    storey_id: uuid::Uuid
+    storey_id: Option<uuid::Uuid>
 }
 
-#[get("/rooms")]
+/*#[get("/rooms")]
 async fn get_all_rooms() -> impl Responder {
     let rooms = get_rooms();
     let result = serde_json::to_string(&rooms).unwrap();
     info!("found {} rooms", rooms.len());
     HttpResponse::Ok().json(result)
-}
+}*/
 
 #[get("/rooms")]
 async fn get_rooms_by_storey(param: web::Query<QueryByStorey>) -> impl Responder {
-    let rooms = rooms_by_storey(param.storey_id);
-    info!("found {} rooms in storey {}", rooms.len(), param.storey_id);
-    HttpResponse::Ok().json(rooms)
+    let rooms = if param.storey_id.is_some() {
+        rooms_by_storey(param.storey_id.unwrap())
+    } else {
+        get_rooms()
+    };
+    info!("found {} rooms", rooms.len());
+    let result = serde_json::to_string(&rooms).unwrap();
+    HttpResponse::Ok().json(result)
 }
 
 #[post("/rooms", wrap="HttpAuthentication::bearer(validator)")]
