@@ -18,14 +18,6 @@ pub struct QueryByStorey {
     storey_id: Option<uuid::Uuid>
 }
 
-/*#[get("/rooms")]
-async fn get_all_rooms() -> impl Responder {
-    let rooms = get_rooms();
-    let result = serde_json::to_string(&rooms).unwrap();
-    info!("found {} rooms", rooms.len());
-    HttpResponse::Ok().json(result)
-}*/
-
 #[get("/rooms")]
 async fn get_rooms_by_storey(param: web::Query<QueryByStorey>) -> impl Responder {
     let rooms = if param.storey_id.is_some() {
