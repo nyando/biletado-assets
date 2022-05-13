@@ -2,7 +2,8 @@ use actix_web::{get, post, put, delete, HttpResponse, Responder, web};
 use actix_web_httpauth::middleware::HttpAuthentication;
 
 use log::{info, error};
-use serde_json::{json};
+use serde_json::json;
+use serde::Deserialize;
 
 use crate::api::auth::validator;
 use crate::api::util::validate_uuid;
@@ -11,12 +12,24 @@ use crate::db::crud::rooms_crud::has_rooms;
 use crate::db::crud::buildings_crud::find_building_by_id;
 use crate::db::models::OptionalIDStorey;
 
+#[derive(Debug, Deserialize)]
+pub struct QueryByBuilding {
+    building_id: uuid::Uuid
+}
+
 #[get("/storeys")]
 async fn get_all_storeys() -> impl Responder {
     let storeys = get_storeys();
     let result = serde_json::to_string(&storeys).unwrap();
     info!("found {} storeys", storeys.len());
     HttpResponse::Ok().json(result)
+}
+
+#[get("/storeys")]
+async fn get_storeys_by_building(param: web::Query<QueryByBuilding>) -> impl Responder {
+    let storeys = storeys_by_building(param.building_id);
+    info!("found {} rooms in storey {}", storeys.len(), param.building_id);
+    HttpResponse::Ok().json(storeys)
 }
 
 #[post("/storeys", wrap="HttpAuthentication::bearer(validator)")]

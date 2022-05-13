@@ -24,6 +24,11 @@ pub fn get_rooms() -> Vec<Room> {
     rooms.load::<Room>(&conn).expect("Error loading storeys")
 }
 
+pub fn rooms_by_storey(id: uuid::Uuid) -> Vec<Room> {
+    let conn = connection().unwrap();
+    rooms.filter(storey_id.eq(id)).load::<Room>(&conn).unwrap_or(Vec::new())
+}
+
 /// Find a room by UUID.
 /// Returns a room struct with the corresponding UUID or None if the UUID is not in the DB.
 pub fn find_room_by_id(id: uuid::Uuid) -> Option<Room> {

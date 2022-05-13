@@ -2,7 +2,8 @@ use actix_web::{dev::ServiceRequest, get, post, put, delete, HttpRequest, HttpRe
 use actix_web_httpauth::middleware::HttpAuthentication;
 
 use log::{debug, info, error};
-use serde_json::{json};
+use serde_json::json;
+use serde::Deserialize;
 use std::env;
 
 use crate::api::auth::validator;
@@ -12,12 +13,24 @@ use crate::db::crud::storeys_crud::find_storey_by_id;
 use crate::db::models::OptionalIDRoom;
 use crate::db::models::Reservation;
 
+#[derive(Debug, Deserialize)]
+pub struct QueryByStorey {
+    storey_id: uuid::Uuid
+}
+
 #[get("/rooms")]
 async fn get_all_rooms() -> impl Responder {
     let rooms = get_rooms();
     let result = serde_json::to_string(&rooms).unwrap();
     info!("found {} rooms", rooms.len());
     HttpResponse::Ok().json(result)
+}
+
+#[get("/rooms")]
+async fn get_rooms_by_storey(param: web::Query<QueryByStorey>) -> impl Responder {
+    let rooms = rooms_by_storey(param.storey_id);
+    info!("found {} rooms in storey {}", rooms.len(), param.storey_id);
+    HttpResponse::Ok().json(rooms)
 }
 
 #[post("/rooms", wrap="HttpAuthentication::bearer(validator)")]

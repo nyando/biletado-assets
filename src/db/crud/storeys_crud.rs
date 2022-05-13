@@ -19,6 +19,11 @@ pub fn has_storeys(id: uuid::Uuid) -> bool {
         .unwrap_or(false)
 }
 
+pub fn storeys_by_building(id: uuid::Uuid) -> Vec<Storey> {
+    let conn = connection().unwrap();
+    storeys.filter(building_id.eq(id)).load::<Storey>(&conn).unwrap_or(Vec::new())
+}
+
 /// Return a vector of all storeys in the database.
 pub fn get_storeys() -> Vec<Storey> {
     let conn = connection().unwrap();
