@@ -25,8 +25,7 @@ async fn get_storeys_by_building(param: web::Query<QueryByBuilding>) -> impl Res
         get_storeys()
     };
     info!("found {} storeys", storeys.len());
-    let result = serde_json::to_string(&storeys).unwrap();
-    HttpResponse::Ok().json(result)
+    HttpResponse::Ok().json(storeys)
 }
 
 #[post("/storeys", wrap="HttpAuthentication::bearer(validator)")]
@@ -64,14 +63,15 @@ async fn get_storey_by_id(id: web::Path<String>) -> impl Responder {
 
     if let Some(storey_id) = storey_uuid {
 
-        let result = serde_json::to_string(&find_storey_by_id(storey_id));
-
-        if result.is_ok() { 
-            info!("found storey with UUID: {}", id);
-            HttpResponse::Ok().json(result.unwrap())
-        } else {
-            error!("could not find storey with UUID: {}", id);
-            HttpResponse::NotFound().json(json!({ "message": "storey with UUID not found" }))
+        match find_storey_by_id(storey_id) {
+            Some(storey) => {
+                info!("found storey with UUID: {}", id);
+                HttpResponse::Ok().json(storey)
+            },
+            None => {
+                error!("could not find storey with UUID: {}", id);
+                HttpResponse::NotFound().json(json!({ "message": "storey with UUID not found" }))
+            }
         }
 
     } else {

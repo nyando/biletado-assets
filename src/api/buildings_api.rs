@@ -2,7 +2,7 @@ use actix_web::{get, post, put, delete, HttpResponse, Responder, web};
 use actix_web_httpauth::middleware::HttpAuthentication;
 
 use log::{info, error};
-use serde_json::{json};
+use serde_json::json;
 
 use crate::api::auth::validator;
 use crate::api::util::validate_uuid;
@@ -24,9 +24,8 @@ use crate::db::models::OptionalIDBuilding;
 #[get("/buildings")]
 async fn get_all_buildings() -> impl Responder {
     let buildings = get_buildings();
-    let result = serde_json::to_string(&buildings).unwrap();
     info!("found {} buildings", buildings.len());
-    HttpResponse::Ok().json(result)
+    HttpResponse::Ok().json(buildings)
 }
 
 #[post("/buildings", wrap="HttpAuthentication::bearer(validator)")]
@@ -56,14 +55,15 @@ async fn get_building_by_id(id: web::Path<String>) -> impl Responder {
 
     if let Some(building_id) = building_uuid {
 
-        let result = serde_json::to_string(&find_building_by_id(building_id));
-
-        if result.is_ok() { 
-            info!("found building with UUID: {}", id);
-            HttpResponse::Ok().json(result.unwrap())
-        } else {
-            error!("could not find building with UUID: {}", id);
-            HttpResponse::NotFound().json(json!({ "message": "building with UUID not found" }))
+        match find_building_by_id(building_id) {
+            Some(building) => {
+                info!("found building with UUID: {}", id);
+                HttpResponse::Ok().json(building)
+            },
+            None => {
+                error!("could not find building with UUID: {}", id);
+                HttpResponse::NotFound().json(json!({ "message": "building with UUID not found" }))
+            }
         }
 
     } else {

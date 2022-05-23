@@ -26,8 +26,7 @@ async fn get_rooms_by_storey(param: web::Query<QueryByStorey>) -> impl Responder
         get_rooms()
     };
     info!("found {} rooms", rooms.len());
-    let result = serde_json::to_string(&rooms).unwrap();
-    HttpResponse::Ok().json(result)
+    HttpResponse::Ok().json(rooms)
 }
 
 #[post("/rooms", wrap="HttpAuthentication::bearer(validator)")]
@@ -64,14 +63,15 @@ async fn get_room_by_id(id: web::Path<String>) -> impl Responder {
 
     if let Some(room_id) = room_uuid {
 
-        let result = serde_json::to_string(&find_room_by_id(room_id));
-
-        if result.is_ok() { 
-            info!("found room with UUID: {}", id);
-            HttpResponse::Ok().json(result.unwrap())
-        } else {
-            error!("could not find room with UUID: {}", id);
-            HttpResponse::NotFound().json(json!({ "message": "room with UUID not found" }))
+        match find_room_by_id(room_id) {
+            Some(room) => {
+                info!("found room with UUID: {}", id);
+                HttpResponse::Ok().json(room)
+            },
+            None => {
+                error!("could not find room with UUID: {}", id);
+                HttpResponse::NotFound().json(json!({ "message": "room with UUID not found" }))
+            }
         }
 
     } else {
