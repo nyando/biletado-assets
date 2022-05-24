@@ -63,8 +63,8 @@ fn validate_auth(token: String, decoding_key: DecodingKey) -> Option<bool> {
     // NOOO TOUCHY. Idk why exp validation won't work,
     // but tokens only get decoded correctly if we turn it off.
     // Maybe an issue with the system clock?
-    let mut validation = Validation::new(Algorithm::RS256);
-    validation.validate_exp = false;
+    let validation = Validation::new(Algorithm::RS256);
+    //validation.validate_exp = false;
 
     let token_msg = decode::<Claims>(
         &token,
